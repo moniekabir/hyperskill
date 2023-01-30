@@ -1,0 +1,82 @@
+import math
+import argparse
+
+
+def annuity_payment(p, n, r):
+    # --type=annuity --principal=1000000 --periods=60 --interest=10
+    i = r * (0.01 / 12)
+    a = math.ceil(p * (i * ((1 + i) ** n) / (((i + 1) ** n) - 1)))
+    overpayment = a * n - p
+    print(f'Your annuity payment = {a}!', f'\nOverpayment = {overpayment}')
+
+
+def loan_principal(a, n, r):
+    # --type=annuity --payment=8722 --periods=120 --interest=5.6
+    i = r * (0.01 / 12)
+    p = math.floor(a / (i * ((1 + i) ** n) / (((1 + i) ** n) - 1)))
+    overpayment = a * n - p
+    print(f'Your loan principal = {p}!', f'\nOverpayment = {overpayment}')
+
+
+def number_of_monthly_payments(p, a, r):
+    # --type=annuity --principal=500000 --payment=23000 --interest=7.8
+    i = r * (0.01 / 12)
+    n = math.log((a / (a - i * p)), (1 + i))
+    years = int(n // 12)
+    month = math.ceil(n % 12)
+    overpayment = math.ceil(n) * a - p
+    if month == 12:
+        years += 1
+        print(f'It will take {years} years to repay this loan!')
+    elif month == 0:
+        print(f'It will take {years} years to repay this loan!')
+    else:
+        print(f'It will take {years} years and {month} months to repay this loan!')
+    print(f'Overpayment = {overpayment}')
+
+
+def differentiated_payments(p, n, r):
+    # --type=diff --principal=1000000 --periods=10 --interest=10
+    i = r * (0.01 / 12)
+    total_payment = 0
+
+    for m in range(n, 0, -1):
+        d = math.ceil(p / n + i * (p - p * (n - m) / n))
+        print(f'Month {n - m + 1}: payment is {d}')
+        total_payment += d
+    overpayment = total_payment - p
+    print(f'\nOverpayment = {overpayment}')
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-t', '--type', type=str, choices=['annuity', 'diff'])
+parser.add_argument('-p', '--principal', type=int)
+parser.add_argument('--periods', type=int)
+parser.add_argument('--interest', type=float)
+parser.add_argument('--payment', type=int)
+args = parser.parse_args()
+
+if (args.type == 'annuity' and args.payment is None
+        and args.principal is not None
+        and args.periods is not None
+        and args.interest is not None):
+    annuity_payment(args.principal, args.periods, args.interest)
+
+elif (args.type == 'annuity' and args.principal is None
+        and args.payment is not None
+        and args.periods is not None
+        and args.interest is not None):
+    loan_principal(args.payment, args.periods, args.interest)
+elif (args.type == 'annuity' and args.periods is None
+        and args.principal is not None
+        and args.payment is not None
+        and args.interest is not None):
+    number_of_monthly_payments(args.principal, args.payment, args.interest)
+elif (args.type == 'diff' and args.payment is None
+        and args.principal is not None
+        and args.periods is not None
+        and args.interest is not None):
+    differentiated_payments(args.principal, args.periods, args.interest)
+else:
+    print('Incorrect parameters')
+    exit(2)
